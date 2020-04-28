@@ -9,7 +9,6 @@ class Triangle {
 public:
 	// constructors
 	Triangle();
-	Triangle(const glm::vec4& a, const glm::vec4& b, const glm::vec4& c, const glm::vec3& color_A, const glm::vec3& color_B, const glm::vec3& color_C, const glm::mat4& obj_frame);
 
 	// coordinate conversion between obj, cam, world coordinate frames
 	Triangle obj2world();
@@ -21,30 +20,35 @@ public:
 	glm::vec4 a;
 	glm::vec4 b;
 	glm::vec4 c;
-	// colors of three vertexes of this triangle
+	// colors of three vertexes 
 	glm::vec3 color_a;
 	glm::vec3 color_b;
 	glm::vec3 color_c;
-	// object coordinate frame transformation_matrix with respect to world coordinate
-	glm::mat4 object_coordinate_frame;
-	glm::mat4 object_frame_inv;
+	// normals of three vertexes
+	glm::vec3 normal_a;
+	glm::vec3 normal_b;
+	glm::vec3 normal_c;
+
+	// pointer object coordinate frame transformation_matrix with respect to world coordinate, which may be shared by many triangles
+	glm::mat4 *p_object_coordinate_frame;
+	glm::mat4 *p_object_frame_inv;
 };
 
 //-----------------coordinate conversion between obj, cam, world coordinate frames-------------------------------------
 
 inline Triangle Triangle::obj2world() {
 	Triangle ret(*this);
-	ret.a = object_coordinate_frame * a;
-	ret.b = object_coordinate_frame * b;
-	ret.c = object_coordinate_frame * c;
+	ret.a = *p_object_coordinate_frame * a;
+	ret.b = *p_object_coordinate_frame * b;
+	ret.c = *p_object_coordinate_frame * c;
 	return ret;
 }
 
 inline Triangle Triangle::world2obj() {
 	Triangle ret(*this);
-	ret.a = object_frame_inv * a;
-	ret.b = object_frame_inv * b;
-	ret.c = object_frame_inv * c;
+	ret.a = *p_object_frame_inv * a;
+	ret.b = *p_object_frame_inv * b;
+	ret.c = *p_object_frame_inv * c;
 	return ret;
 }
 
