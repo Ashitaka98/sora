@@ -13,7 +13,10 @@ glm::mat4 camera_frame_inv;
 // create z-buffer
 float z_buffer[height][width];
 
-// scene illuminant
+// scene illuminant 
+float radiance_ambient = 0.5;                     // ambient light
+float radiance_directional = 0.5;                 // directional light
+glm::vec4 direction_directional = glm::normalize(glm::vec4(1,1,1,0));            // direction of the directional light, which is a unit vector given in world coordinate frame 
 
 // mouse event handler
 //void onMouseEvent(int event, int x, int y, int flag, void* ustc);
@@ -52,14 +55,13 @@ int main(int argc, char const* argv[]) {
     camera_coordinate_frame[3][3] = 1;
     camera_frame_inv = glm::inverse(camera_coordinate_frame);
 
-    //initialize object coordinate frame
+    //initialize object coordinate frame with respect to world coordinate frame
     glm::mat4 object_coordinate_frame(
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
         0, 0, -3, 1
     );
-
     glm::mat4 object_frame_inv = glm::inverse(object_coordinate_frame);
 
 
@@ -72,7 +74,7 @@ int main(int argc, char const* argv[]) {
         obj_cube[i].p_object_frame_inv = &object_frame_inv;
     }
 
-    // set vertex for each triangle
+    // set vertex attribute for each triangle
     obj_cube[0].a = glm::vec4(-1, 1, 1, 1);
     obj_cube[0].b = glm::vec4(1, 1, 1, 1);
     obj_cube[0].c = glm::vec4(-1, -1, 1, 1);
@@ -109,6 +111,43 @@ int main(int argc, char const* argv[]) {
     obj_cube[11].a = glm::vec4(1, -1, -1, 1);
     obj_cube[11].b = glm::vec4(-1, -1, -1, 1);
     obj_cube[11].c = glm::vec4(1, -1, 1, 1);
+
+    obj_cube[0].normal_a = glm::vec4(0, 0, 1,0);
+    obj_cube[0].normal_b = glm::vec4(0, 0, 1,0);
+    obj_cube[0].normal_c = glm::vec4(0, 0, 1,0);
+    obj_cube[1].normal_a = glm::vec4(0, 0, 1, 0);
+    obj_cube[1].normal_b = glm::vec4(0, 0, 1, 0);
+    obj_cube[1].normal_c = glm::vec4(0, 0, 1,0);
+    obj_cube[2].normal_a = glm::vec4(1, 0, 0,0);
+    obj_cube[2].normal_b = glm::vec4(1, 0, 0,0);
+    obj_cube[2].normal_c = glm::vec4(1, 0, 0, 0);
+    obj_cube[3].normal_a = glm::vec4(1, 0, 0, 0);
+    obj_cube[3].normal_b = glm::vec4(1, 0, 0, 0);
+    obj_cube[3].normal_c = glm::vec4(1, 0, 0, 0);
+    obj_cube[4].normal_a = glm::vec4(0, 0, -1, 0);
+    obj_cube[4].normal_b = glm::vec4(0, 0, -1, 0);
+    obj_cube[4].normal_c = glm::vec4(0, 0, -1, 0);
+    obj_cube[5].normal_a = glm::vec4(0, 0, -1, 0);
+    obj_cube[5].normal_b = glm::vec4(0, 0, -1, 0);
+    obj_cube[5].normal_c = glm::vec4(0, 0, -1, 0);
+    obj_cube[6].normal_a = glm::vec4(-1, 0, 0, 0);
+    obj_cube[6].normal_b = glm::vec4(-1, 0, 0, 0);
+    obj_cube[6].normal_c = glm::vec4(-1, 0, 0, 0);
+    obj_cube[7].normal_a = glm::vec4(-1, 0, 0, 0);
+    obj_cube[7].normal_b = glm::vec4(-1, 0, 0, 0);
+    obj_cube[7].normal_c = glm::vec4(-1, 0, 0, 0);
+    obj_cube[8].normal_a = glm::vec4(0, 1, 0, 0);
+    obj_cube[8].normal_b = glm::vec4(0, 1, 0, 0);
+    obj_cube[8].normal_c = glm::vec4(0, 1, 0, 0);
+    obj_cube[9].normal_a = glm::vec4(0, 1, 0, 0);
+    obj_cube[9].normal_b = glm::vec4(0, 1, 0, 0);
+    obj_cube[9].normal_c = glm::vec4(0, 1, 0, 0);
+    obj_cube[10].normal_a = glm::vec4(0, -1, 0, 0);
+    obj_cube[10].normal_b = glm::vec4(0, -1, 0, 0);
+    obj_cube[10].normal_c = glm::vec4(0, -1, 0, 0);
+    obj_cube[11].normal_a = glm::vec4(0, -1, 0, 0);
+    obj_cube[11].normal_b = glm::vec4(0, -1, 0, 0);
+    obj_cube[11].normal_c = glm::vec4(0, -1, 0, 0);
     //----------------------------------------------------------------------------------------------------------------------------
 
 
@@ -127,9 +166,9 @@ int main(int argc, char const* argv[]) {
     //----------------------------------------- render loop ------------------------------------------------------------
     while (true) {
 
-        // clear the frame buffer
+        // clear frame buffer
         framebuffer_cv_mat = cv::Mat::zeros(height, width, CV_8UC3);
-        // clear the z-buffer
+        // clear z-buffer
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++)
                 z_buffer[i][j] = 1;
@@ -177,7 +216,9 @@ int main(int argc, char const* argv[]) {
             clipping_cube[i].b = perspective_matrix * camera_cube[i].b;
             clipping_cube[i].c = perspective_matrix * camera_cube[i].c;
         }
+
         // clipping
+
 
         // perspective divide
         Triangle NDC_cube[12];
@@ -186,7 +227,9 @@ int main(int argc, char const* argv[]) {
             NDC_cube[i].b = clipping_cube[i].b / clipping_cube[i].b[3];
             NDC_cube[i].c = clipping_cube[i].c / clipping_cube[i].c[3];
         }
+
         // backface culling
+
 
         // viewport transform
         glm::mat4 viewport_matrix = matrix_viewportTransform(width, height);
@@ -196,8 +239,11 @@ int main(int argc, char const* argv[]) {
             window_cube[i].b = viewport_matrix * NDC_cube[i].b;
             window_cube[i].c = viewport_matrix * NDC_cube[i].c;
         }
+
         // rasterization
         for (int k = 0; k < 12; k++) {
+
+            // a bounding box for triangle projected to display window
             int boundary_x_min = MIN(MIN(window_cube[k].a.x, window_cube[k].b.x), window_cube[k].c.x);
             int boundary_x_max = MAX(MAX(window_cube[k].a.x, window_cube[k].b.x), window_cube[k].c.x);
             int boundary_y_min = MIN(MIN(window_cube[k].a.y, window_cube[k].b.y), window_cube[k].c.y);
@@ -208,15 +254,26 @@ int main(int argc, char const* argv[]) {
                     glm::vec3 barycentric = barycentric_coordinate(window_cube[k].a, window_cube[k].b, window_cube[k].c, glm::vec2(j, i));
                     if (barycentric.x >= 0 && barycentric.x <= 1 && barycentric.y >= 0 && barycentric.y <= 1 && barycentric.z >= 0 && barycentric.z <= 1) {
                         float z_interpolated = barycentric.x * window_cube[k].a.z + barycentric.y * window_cube[k].b.z + barycentric.z * window_cube[k].c.z;
-                        if (z_interpolated < z_buffer[i][j]){
+                        
+                        if (z_interpolated < z_buffer[i][j]) {       // this pixel will be displayed
+                            // transform illuminant from world coordinate frame to triangle's object coordinate frame for shading
+                            glm::vec4  direction = - *(obj_cube[k].p_object_frame_inv) * direction_directional;
+                            // update z-buffer
                             z_buffer[i][j] = z_interpolated;
-                            glm::vec3 color_interpolated = barycentric.x * window_cube[k].color_a + barycentric.y * window_cube[k].color_b + barycentric.z * window_cube[k].color_c;;
-                            framebuffer_cv_mat.at<cv::Vec3b>(height - i, j) = cv::Vec3b(color_interpolated.x, color_interpolated.y, color_interpolated.z);
+                            // interpolate to get pixel color, will be replaced by texture sampling
+                            glm::vec3 color_interpolated = barycentric.x * obj_cube[k].color_a + barycentric.y * obj_cube[k].color_b + barycentric.z * obj_cube[k].color_c;;
+                            // interpolate to get pixel normal vector
+                            glm::vec4 normal_interpolated = barycentric.x * obj_cube[k].normal_a + barycentric.y * obj_cube[k].normal_b + barycentric.z * obj_cube[k].normal_c;
+                            normal_interpolated = glm::normalize(normal_interpolated);  // normalize the vector interpolated
+                            // shade the pixel
+                            glm::vec3 color_shaded = (radiance_ambient + MAX(glm::dot(direction, normal_interpolated),0) * radiance_directional) * color_interpolated;
+                            framebuffer_cv_mat.at<cv::Vec3b>(height - i, j) = cv::Vec3b(color_shaded.x, color_shaded.y, color_shaded.z);
                         }
                     }
                 }
             }
         }
+
         // show img on screen
         cv::imshow(kWindowName, framebuffer_cv_mat);
 

@@ -1,5 +1,7 @@
 #pragma once
 #include"triangle.h"
+
+// 
 glm::vec3 barycentric_coordinate(const glm::vec2& A, const glm::vec2& B, const glm::vec2& C, const glm::vec2& point) {
 	float u, v, w;
 	glm::vec3 v1 = glm::vec3(B.x - A.x, C.x - A.x, point.x - A.x);
@@ -19,3 +21,4 @@ glm::vec3 barycentric_coordinate(const glm::vec2& A, const glm::vec2& B, const g
 	return glm::vec3(w, u, v);
 }
 
+// 
