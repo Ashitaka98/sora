@@ -22,14 +22,17 @@ public:
 	glm::vec4 b;
 	glm::vec4 c;
 	// colors of three vertexes, when texture is introduced, these should be commented out
-	glm::vec3 color_a;
+	/*glm::vec3 color_a;
 	glm::vec3 color_b;
-	glm::vec3 color_c;
+	glm::vec3 color_c;*/
 	// normals of three vertexes in object coordinate frame, the fourth coordinate should always be zero, use vec4 just for convenience
 	glm::vec4 normal_a;
 	glm::vec4 normal_b;
 	glm::vec4 normal_c;
 	// texture coordinate of three vertexes
+	glm::vec2 tex_coord_a;
+	glm::vec2 tex_coord_b;
+	glm::vec2 tex_coord_c;
 
 	// pointer object coordinate frame transformation_matrix with respect to world coordinate, which may be shared by many triangles
 	glm::mat4 *p_object_coordinate_frame;

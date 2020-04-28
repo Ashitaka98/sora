@@ -7,10 +7,10 @@
 
 
 // camera coordinate frame transformation_matrix with respect to world coordinate
-glm::mat4 camera_coordinate_frame(0);
+glm::mat4 camera_coordinate_frame;
 glm::mat4 camera_frame_inv;
 
-// create z-buffer
+// z-buffer
 float z_buffer[height][width];
 
 // scene illuminant 
@@ -35,11 +35,14 @@ int main(int argc, char const* argv[]) {
     static const char kWindowName[] = "sora";
     cv::Mat framebuffer_cv_mat = cv::Mat::zeros(height, width, CV_8UC3);
 
-    //initialize z-buffer
-    for (int i = 0; i < height; i++)
-        for (int j = 0; j < width; j++)
-            z_buffer[i][j] = 1;
-
+    // load texture image
+    cv::Mat texture_image = cv::imread("C:\\Work\\Projects\\sora\\x64\\Debug\\checkboard.png");
+    if (texture_image.empty()) {
+        std::cout << "texture image load failure\n";
+        return 0;
+    }
+    int texture_width = texture_image.cols;
+    int texture_height = texture_image.rows;
 
     // create window
     cv::namedWindow(kWindowName, cv::WINDOW_NORMAL | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
@@ -48,11 +51,12 @@ int main(int argc, char const* argv[]) {
     //cv::setMouseCallback(kWindowName, onMouseEvent,(void*)&camera_coordinate_frame);
     
     //initialize camera coordinate frame
-    camera_coordinate_frame[0][0] = 1;
-    camera_coordinate_frame[1][1] = 1;
-    camera_coordinate_frame[2][2] = 1;
-    camera_coordinate_frame[3][2] = 1;
-    camera_coordinate_frame[3][3] = 1;
+    camera_coordinate_frame = glm::mat4(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 1, 1
+    );
     camera_frame_inv = glm::inverse(camera_coordinate_frame);
 
     //initialize object coordinate frame with respect to world coordinate frame
@@ -74,50 +78,51 @@ int main(int argc, char const* argv[]) {
         obj_cube[i].p_object_frame_inv = &object_frame_inv;
     }
 
-    // set vertex attribute for each triangle
+    // set vertex coordinate for each triangle
     obj_cube[0].a = glm::vec4(-1, 1, 1, 1);
     obj_cube[0].b = glm::vec4(1, 1, 1, 1);
     obj_cube[0].c = glm::vec4(-1, -1, 1, 1);
     obj_cube[1].a = glm::vec4(1, -1, 1, 1);
     obj_cube[1].b = glm::vec4(-1, -1, 1, 1);
     obj_cube[1].c = glm::vec4(1, 1, 1, 1);
-    obj_cube[2].a = glm::vec4(1, 1, 1, 1);
-    obj_cube[2].b = glm::vec4(1, 1, -1, 1);
-    obj_cube[2].c = glm::vec4(1, -1, 1, 1);
-    obj_cube[3].a = glm::vec4(1, -1, -1, 1);
-    obj_cube[3].b = glm::vec4(1, -1, 1, 1);
-    obj_cube[3].c = glm::vec4(1, 1, -1, 1);
+    obj_cube[2].a = glm::vec4(1, -1, 1, 1);
+    obj_cube[2].b = glm::vec4(1, 1, 1, 1);
+    obj_cube[2].c = glm::vec4(1, -1, -1, 1);
+    obj_cube[3].a = glm::vec4(1, 1, -1, 1);
+    obj_cube[3].b = glm::vec4(1, -1, -1, 1);
+    obj_cube[3].c = glm::vec4(1, 1, 1, 1);
     obj_cube[4].a = glm::vec4(1, 1, -1, 1);
     obj_cube[4].b = glm::vec4(-1, 1, -1, 1);
     obj_cube[4].c = glm::vec4(1, -1, -1, 1);
     obj_cube[5].a = glm::vec4(-1, -1, -1, 1);
     obj_cube[5].b = glm::vec4(1, -1, -1, 1);
     obj_cube[5].c = glm::vec4(-1, 1, -1, 1);
-    obj_cube[6].a = glm::vec4(-1, 1, -1, 1);
-    obj_cube[6].b = glm::vec4(-1, 1, 1, 1);
-    obj_cube[6].c = glm::vec4(-1, -1, -1, 1);
-    obj_cube[7].a = glm::vec4(-1, -1, 1, 1);
-    obj_cube[7].b = glm::vec4(-1, -1, -1, 1);
-    obj_cube[7].c = glm::vec4(-1, 1, 1, 1);
-    obj_cube[8].a = glm::vec4(-1, 1, -1, 1);
-    obj_cube[8].b = glm::vec4(1, 1, -1, 1);
-    obj_cube[8].c = glm::vec4(-1, 1, 1, 1);
-    obj_cube[9].a = glm::vec4(1, 1, 1, 1);
-    obj_cube[9].b = glm::vec4(-1, 1, 1, 1);
-    obj_cube[9].c = glm::vec4(1, 1, -1, 1);
-    obj_cube[10].a = glm::vec4(-1, -1, 1, 1);
-    obj_cube[10].b = glm::vec4(1, -1, 1, 1);
-    obj_cube[10].c = glm::vec4(-1, -1, -1, 1);
-    obj_cube[11].a = glm::vec4(1, -1, -1, 1);
-    obj_cube[11].b = glm::vec4(-1, -1, -1, 1);
-    obj_cube[11].c = glm::vec4(1, -1, 1, 1);
+    obj_cube[6].a = glm::vec4(-1, -1, -1, 1);
+    obj_cube[6].b = glm::vec4(-1, 1, -1, 1);
+    obj_cube[6].c = glm::vec4(-1, -1, 1, 1);
+    obj_cube[7].a = glm::vec4(-1, 1, 1, 1);
+    obj_cube[7].b = glm::vec4(-1, -1, 1, 1);
+    obj_cube[7].c = glm::vec4(-1, 1, -1, 1);
+    obj_cube[8].a = glm::vec4(1, 1, -1, 1);
+    obj_cube[8].b = glm::vec4(1, 1, 1, 1);
+    obj_cube[8].c = glm::vec4(-1, 1, -1, 1);
+    obj_cube[9].a = glm::vec4(-1, 1, 1, 1);
+    obj_cube[9].b = glm::vec4(-1, 1, -1, 1);
+    obj_cube[9].c = glm::vec4(1, 1, 1, 1);
+    obj_cube[10].a = glm::vec4(1, -1, 1, 1);
+    obj_cube[10].b = glm::vec4(1, -1, -1, 1);
+    obj_cube[10].c = glm::vec4(-1, -1, 1, 1);
+    obj_cube[11].a = glm::vec4(-1, -1, -1, 1);
+    obj_cube[11].b = glm::vec4(-1, -1, 1, 1);
+    obj_cube[11].c = glm::vec4(1, -1, -1, 1);
 
+    // set vertex normal for each triangle
     obj_cube[0].normal_a = glm::vec4(0, 0, 1,0);
     obj_cube[0].normal_b = glm::vec4(0, 0, 1,0);
     obj_cube[0].normal_c = glm::vec4(0, 0, 1,0);
     obj_cube[1].normal_a = glm::vec4(0, 0, 1, 0);
     obj_cube[1].normal_b = glm::vec4(0, 0, 1, 0);
-    obj_cube[1].normal_c = glm::vec4(0, 0, 1,0);
+    obj_cube[1].normal_c = glm::vec4(0, 0, 1, 0);
     obj_cube[2].normal_a = glm::vec4(1, 0, 0,0);
     obj_cube[2].normal_b = glm::vec4(1, 0, 0,0);
     obj_cube[2].normal_c = glm::vec4(1, 0, 0, 0);
@@ -148,6 +153,44 @@ int main(int argc, char const* argv[]) {
     obj_cube[11].normal_a = glm::vec4(0, -1, 0, 0);
     obj_cube[11].normal_b = glm::vec4(0, -1, 0, 0);
     obj_cube[11].normal_c = glm::vec4(0, -1, 0, 0);
+
+    // set vertex texture coordinate for each triangle
+    obj_cube[0].tex_coord_a = glm::vec2(0, 0);
+    obj_cube[0].tex_coord_b = glm::vec2(511, 0);
+    obj_cube[0].tex_coord_c = glm::vec2(0, 511);
+    obj_cube[1].tex_coord_a = glm::vec2(511, 511);
+    obj_cube[1].tex_coord_b = glm::vec2(0, 511);
+    obj_cube[1].tex_coord_c = glm::vec2(511, 0);
+    obj_cube[2].tex_coord_a = glm::vec2(511, 511);
+    obj_cube[2].tex_coord_b = glm::vec2(511, 0);
+    obj_cube[2].tex_coord_c = glm::vec2(0, 511);
+    obj_cube[3].tex_coord_a = glm::vec2(0, 0);
+    obj_cube[3].tex_coord_b = glm::vec2(0, 511);
+    obj_cube[3].tex_coord_c = glm::vec2(511, 0);
+    obj_cube[4].tex_coord_a = glm::vec2(0, 0);
+    obj_cube[4].tex_coord_b = glm::vec2(511, 0);
+    obj_cube[4].tex_coord_c = glm::vec2(0, 511);
+    obj_cube[5].tex_coord_a = glm::vec2(511, 511);
+    obj_cube[5].tex_coord_b = glm::vec2(0, 511);
+    obj_cube[5].tex_coord_c = glm::vec2(511, 0);
+    obj_cube[6].tex_coord_a = glm::vec2(511, 511);
+    obj_cube[6].tex_coord_b = glm::vec2(511, 0);
+    obj_cube[6].tex_coord_c = glm::vec2(0, 511);
+    obj_cube[7].tex_coord_a = glm::vec2(0, 0);
+    obj_cube[7].tex_coord_b = glm::vec2(0, 511);
+    obj_cube[7].tex_coord_c = glm::vec2(511, 0);
+    obj_cube[8].tex_coord_a = glm::vec2(511, 511);
+    obj_cube[8].tex_coord_b = glm::vec2(511, 0);
+    obj_cube[8].tex_coord_c = glm::vec2(0, 511);
+    obj_cube[9].tex_coord_a = glm::vec2(0, 0);
+    obj_cube[9].tex_coord_b = glm::vec2(0, 511);
+    obj_cube[9].tex_coord_c = glm::vec2(511, 0);
+    obj_cube[10].tex_coord_a = glm::vec2(511, 511);
+    obj_cube[10].tex_coord_b = glm::vec2(511, 0);
+    obj_cube[10].tex_coord_c = glm::vec2(0, 511);
+    obj_cube[11].tex_coord_a = glm::vec2(0, 0);
+    obj_cube[11].tex_coord_b = glm::vec2(0, 511);
+    obj_cube[11].tex_coord_c = glm::vec2(511, 0);
     //----------------------------------------------------------------------------------------------------------------------------
 
 
@@ -168,7 +211,7 @@ int main(int argc, char const* argv[]) {
 
         // clear frame buffer
         framebuffer_cv_mat = cv::Mat::zeros(height, width, CV_8UC3);
-        // clear z-buffer
+        // reset z-buffer
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++)
                 z_buffer[i][j] = 1;
@@ -256,17 +299,31 @@ int main(int argc, char const* argv[]) {
                         float z_interpolated = barycentric.x * window_cube[k].a.z + barycentric.y * window_cube[k].b.z + barycentric.z * window_cube[k].c.z;
                         
                         if (z_interpolated < z_buffer[i][j]) {       // this pixel will be displayed
-                            // transform illuminant from world coordinate frame to triangle's object coordinate frame for shading
+                            
+                                                                     // transform illuminant from world coordinate frame to triangle's object coordinate frame for shading
                             glm::vec4  direction = - *(obj_cube[k].p_object_frame_inv) * direction_directional;
+                            
                             // update z-buffer
                             z_buffer[i][j] = z_interpolated;
+                            
                             // interpolate to get pixel color, will be replaced by texture sampling
-                            glm::vec3 color_interpolated = barycentric.x * obj_cube[k].color_a + barycentric.y * obj_cube[k].color_b + barycentric.z * obj_cube[k].color_c;;
+                            // glm::vec3 color_interpolated = barycentric.x * obj_cube[k].color_a + barycentric.y * obj_cube[k].color_b + barycentric.z * obj_cube[k].color_c;;
+                            
+                            // texture sampling
+                            glm::vec2 tex_coord_interpolated = barycentric.x * obj_cube[k].tex_coord_a + barycentric.y * obj_cube[k].tex_coord_b + barycentric.z * obj_cube[k].tex_coord_c;
+                           
+                            tex_coord_interpolated.x = (int)tex_coord_interpolated.x;
+                            tex_coord_interpolated.y = (int)tex_coord_interpolated.y;
+                            cv::Vec3b color_fetched = texture_image.at<cv::Vec3b>(tex_coord_interpolated.y, tex_coord_interpolated.x);
+
                             // interpolate to get pixel normal vector
                             glm::vec4 normal_interpolated = barycentric.x * obj_cube[k].normal_a + barycentric.y * obj_cube[k].normal_b + barycentric.z * obj_cube[k].normal_c;
                             normal_interpolated = glm::normalize(normal_interpolated);  // normalize the vector interpolated
+                            
                             // shade the pixel
-                            glm::vec3 color_shaded = (radiance_ambient + MAX(glm::dot(direction, normal_interpolated),0) * radiance_directional) * color_interpolated;
+                            glm::vec3 color_shaded = (radiance_ambient + MAX(glm::dot(direction, normal_interpolated),0) * radiance_directional) * glm::vec3(color_fetched[0],color_fetched[1],color_fetched[2]);
+                            
+                            // write to frame buffer
                             framebuffer_cv_mat.at<cv::Vec3b>(height - i, j) = cv::Vec3b(color_shaded.x, color_shaded.y, color_shaded.z);
                         }
                     }
