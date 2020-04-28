@@ -309,9 +309,14 @@ int main(int argc, char const* argv[]) {
                             // interpolate to get pixel color, will be replaced by texture sampling
                             // glm::vec3 color_interpolated = barycentric.x * obj_cube[k].color_a + barycentric.y * obj_cube[k].color_b + barycentric.z * obj_cube[k].color_c;;
                             
-                            // texture sampling
-                            glm::vec2 tex_coord_interpolated = barycentric.x * obj_cube[k].tex_coord_a + barycentric.y * obj_cube[k].tex_coord_b + barycentric.z * obj_cube[k].tex_coord_c;
-                           
+                            // texture sampling, with perspective amendent
+                            float w_n_inverse_a = 1 / clipping_cube[k].a.w;
+                            float w_n_inverse_b = 1 / clipping_cube[k].b.w;
+                            float w_n_inverse_c = 1 / clipping_cube[k].c.w;
+                            float w_n_inverse_interpolated = barycentric.x * w_n_inverse_a + barycentric.y * w_n_inverse_b + barycentric.z * w_n_inverse_c;
+                            glm::vec2 v_mul_ndc_w_inv_interpolated = barycentric.x * w_n_inverse_a * obj_cube[k].tex_coord_a + barycentric.y * w_n_inverse_b * obj_cube[k].tex_coord_b + barycentric.z * w_n_inverse_c * obj_cube[k].tex_coord_c;
+                            glm::vec2 tex_coord_interpolated = v_mul_ndc_w_inv_interpolated / w_n_inverse_interpolated;
+                            
                             tex_coord_interpolated.x = (int)tex_coord_interpolated.x;
                             tex_coord_interpolated.y = (int)tex_coord_interpolated.y;
                             cv::Vec3b color_fetched = texture_image.at<cv::Vec3b>(tex_coord_interpolated.y, tex_coord_interpolated.x);
