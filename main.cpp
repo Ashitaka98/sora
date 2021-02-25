@@ -52,7 +52,7 @@ int main(int argc, char const* argv[]) {
     mat4 objectFrameInv = inverse(objectCoordinateFrame);
 
     Cube cube = Cube::getInstance();
-    auto writeColorBufferCallback = [&framebuffer_cv_mat, &texture_image](int X, int Y, int textCoorU, int textCoorV, float illuminant) {
+    auto colorBufferWriter = [&framebuffer_cv_mat, &texture_image](int X, int Y, int textCoorU, int textCoorV, float illuminant) {
         cv::Vec3b colorFetched = texture_image.at<cv::Vec3b>(textCoorU, textCoorV);
         framebuffer_cv_mat.at<cv::Vec3b>(X, Y) = illuminant * colorFetched;
     };
@@ -62,7 +62,7 @@ int main(int argc, char const* argv[]) {
                             cameraCoordinateFrame, 
                             objectCoordinateFrame, 
                             width, height,
-                            writeColorBufferCallback
+                            colorBufferWriter
                             );
     
     //--------------------------------- matrix for view rotation in object coordinate frame ---------------------------------

@@ -9,9 +9,9 @@ namespace sora {
 	using namespace glm;
 	using namespace std;
 	class Rasterizer {
-		typedef function<void(int X, int Y, int textCoorU, int textCoorV, float illuminant)> callback;
+		typedef function<void(int X, int Y, int textCoorU, int textCoorV, float illuminant)> ColorBufferWriter;
 	public:
-		Rasterizer(const shared_ptr<vector<Vertex>> &pVertice, const shared_ptr<vector<Triangle>> &pTris, const mat4 &cameraCoordinateFrame, const mat4& objectCoordinateFrame, const uint16 width, const uint16 height,callback writeColorBufferCallback);
+		Rasterizer(const shared_ptr<vector<Vertex>> &pVertice, const shared_ptr<vector<Triangle>> &pTris, const mat4 &cameraCoordinateFrame, const mat4& objectCoordinateFrame, const uint16 width, const uint16 height, ColorBufferWriter writeColorBuffer);
 		void rasterize();
 		void setCameraFrame(const mat4& cameraCoordinateFrame);
 	private:
@@ -37,6 +37,6 @@ namespace sora {
 		unique_ptr<float[]> _zBuffer;	// transparent to programmer
 
 		// write color buffer callback
-		callback _writeColorBuffer;
+		ColorBufferWriter _writeColorBuffer;
 	};
 }

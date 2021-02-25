@@ -9,14 +9,14 @@ namespace sora {
                             const mat4& objectCoordinateFrame, 
                             const uint16 width, 
                             const uint16 height,
-                            callback writeColorBufferCallback)
+                            ColorBufferWriter writeColorBuffer)
 		:_pVertice(pVertice),
         _pTris(pTris),
         _cameraCoordinateFrame(cameraCoordinateFrame),
         _objectCoordinateFrame(objectCoordinateFrame),
         _width(width),
         _height(height),
-        _writeColorBuffer(writeColorBufferCallback)
+        _writeColorBuffer(writeColorBuffer)
         
 	{
 		_cameraFrameInv = inverse(cameraCoordinateFrame);
