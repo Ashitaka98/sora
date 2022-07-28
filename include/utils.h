@@ -27,21 +27,17 @@ namespace sora {
         return viewportMatrix;
     }
 	inline vec3 BarycentricCoordinate(const vec2& A, const vec2& B, const vec2& C, const vec2& point) {
-		float u, v, w;
-		vec3 v1 = vec3(B.x - A.x, C.x - A.x, point.x - A.x);
-		vec3 v2 = vec3(B.y - A.y, C.y - A.y, point.y - A.y);
-		vec3 cross_product = glm::cross(v1, v2);
-		if (abs(cross_product.z) < 0.001)
-		{
-			u = 0;
-			v = 0;
-			w = 1;
-		}
-		else {
-			u = cross_product.x / -cross_product.z;
-			v = cross_product.y / -cross_product.z;
-			w = 1 - u - v;
-		}
-		return vec3{ w, u, v };
+        vec2 v0 = B - A, v1 = C - A, v2 = point - A;
+        float d00 = glm::dot(v0, v0);
+        float d01 = glm::dot(v0, v1);
+        float d11 = glm::dot(v1, v1);
+        float d20 = glm::dot(v2, v0);
+        float d21 = glm::dot(v2, v1);
+        float denom = d00 * d11 - d01 * d01;
+        float u, v, w;
+        v = (d11 * d20 - d01 * d21) / denom;
+        w = (d00 * d21 - d01 * d20) / denom;
+        u = 1.0f - v - w;
+        return { u,v,w };
 	}
 } 

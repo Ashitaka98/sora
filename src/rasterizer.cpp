@@ -11,8 +11,8 @@ namespace sora {
         //initialize window and camera parameters
         float aspect_ratio = mViewportHeight / mViewportWidth;
         const float fieldOfView = mCamera->GetFov();
-        float near = 1;
-        float far = 9;
+        float near = 2;
+        float far = 8;
         float shift_x = 0;
         float shift_y = 0;
 
@@ -43,14 +43,14 @@ namespace sora {
             uint32 B = ib[3*i + 1];
             uint32 C = ib[3*i + 2];
             // a bounding box for a triangle projected to display window
-            int boundary_x_min = MIN(MIN(viewportBuffer[A].x, viewportBuffer[B].x), viewportBuffer[C].x);
-            int boundary_x_max = MAX(MAX(viewportBuffer[A].x, viewportBuffer[B].x), viewportBuffer[C].x);
-            int boundary_y_min = MIN(MIN(viewportBuffer[A].y, viewportBuffer[B].y), viewportBuffer[C].y);
-            int boundary_y_max = MAX(MAX(viewportBuffer[A].y, viewportBuffer[B].y), viewportBuffer[C].y);
+            float boundary_x_min = MIN(MIN(viewportBuffer[A].x, viewportBuffer[B].x), viewportBuffer[C].x);
+            float boundary_x_max = MAX(MAX(viewportBuffer[A].x, viewportBuffer[B].x), viewportBuffer[C].x);
+            float boundary_y_min = MIN(MIN(viewportBuffer[A].y, viewportBuffer[B].y), viewportBuffer[C].y);
+            float boundary_y_max = MAX(MAX(viewportBuffer[A].y, viewportBuffer[B].y), viewportBuffer[C].y);
 
             // test pixels in bounding box
-            for (int i = boundary_y_min; i <= boundary_y_max; i++) {
-                for (int j = boundary_x_min; j <= boundary_x_max; j++) {
+            for (int i = floor(boundary_y_min); i <= ceil(boundary_y_max); i++) {
+                for (int j = floor(boundary_x_min); j <= ceil(boundary_x_max); j++) {
                     vec3 barycentric = BarycentricCoordinate(vec2(viewportBuffer[A]), vec2(viewportBuffer[B]), vec2(viewportBuffer[C]), vec2(j, i));
                     // shade pixels inside triangles
                     if (barycentric.x >= 0 && barycentric.x <= 1 && barycentric.y >= 0 && barycentric.y <= 1 && barycentric.z >= 0 && barycentric.z <= 1) {
@@ -59,7 +59,7 @@ namespace sora {
                         float w_n_inverse_c = 1 / clippingBuffer[C].w;
                         float w_n_inverse_interpolated = barycentric.x * w_n_inverse_a + barycentric.y * w_n_inverse_b + barycentric.z * w_n_inverse_c;
                         
-                        float z_interpolated = (barycentric.x * w_n_inverse_a * viewportBuffer[A].z + barycentric.y* w_n_inverse_b * viewportBuffer[B].z + barycentric.z* w_n_inverse_c * viewportBuffer[C].z)/w_n_inverse_interpolated;
+                        float z_interpolated = (barycentric.x  * viewportBuffer[A].z + barycentric.y * viewportBuffer[B].z + barycentric.z * viewportBuffer[C].z);
 
                         if (!mDepthTest|| z_interpolated < mZBuffer[i*mViewportWidth + j]) {
 
@@ -71,9 +71,7 @@ namespace sora {
                             if(mDepthWrite)
                                 mZBuffer[i*mViewportWidth + j] = z_interpolated;
 
-                            // interpolate to get pixel color, will be replaced by texture sampling
-                            // vec3 color_interpolated = barycentric.x * obj_cube[k].color_a + barycentric.y * obj_cube[k].color_b + barycentric.z * obj_cube[k].color_c;;
-
+                       
                             // texture sampling, with perspective amendent interpolation
                             vec2 tex_coord_interpolated = (barycentric.x * w_n_inverse_a * mLayout.GetTexCoor(mVertexBuffer,A) + barycentric.y * w_n_inverse_b * mLayout.GetTexCoor(mVertexBuffer,B) + barycentric.z * w_n_inverse_c * mLayout.GetTexCoor(mVertexBuffer,C)) / w_n_inverse_interpolated;
                             

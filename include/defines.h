@@ -38,11 +38,11 @@ namespace sora {
 		VertexStreamLayout() {
 			for (uint8 i = 0; i < static_cast<int>(VertexChannel::Max); i++) {
 				mOffsets[i] = 0;
-				mSize[i] = -1;
+				mSize[i] = 0;
 			}
 		}
 		inline bool HasChannel(VertexChannel channel) {
-			return mSize[static_cast<int>(channel)] != -1;
+			return mSize[static_cast<int>(channel)] != 0;
 		}
 		inline uint16 GetStride() { return mStride; }
 		inline vec4 GetPosition(uint8* vb, uint32 i) {

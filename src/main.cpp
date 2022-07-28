@@ -1,6 +1,6 @@
 #include <GL/glut.h>
 
-#include "cube.h"
+#include "primitiveFactory.h"
 #include "rasterizer.h"
 
 using namespace sora;
@@ -24,7 +24,7 @@ mat4 objectCoordinateFrame(
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
-    0, 0, -3, 1
+    0, 0, -5, 1
 );
 mat4 objectFrameInv = glm::inverse(objectCoordinateFrame);
 
@@ -71,11 +71,20 @@ int main(int argc, char* argv[]) {
 
 
     raster = new Rasterizer(WindowWidth, WindowHeight);
-    auto texture = std::make_shared<Texture>("../res/marbel.jpg");
+    auto texture = std::make_shared<Texture>("../res/checkboard.jpg");
     auto camera = std::make_shared<Camera>(cameraCoordinateFrame, 90);
-    auto light = std::make_shared<Illuminare>(IlluminareType::Directional, 0.5f, glm::normalize(vec3(1, 1, 1)));
+    auto light = std::make_shared<Illuminare>(IlluminareType::Directional, 0.5f, glm::normalize(vec3(-1, -1, -1)));
 
-    Cube *cube = Cube::GetInstance();
+    std::vector<uint8> vb;
+    std::vector<uint8> ib;
+    uint32 primitives = 0;
+    VertexStreamLayout layout;
+    layout.AddVertexChannelLayout(VertexChannel::Position, VertexFormat::Float4);
+    layout.AddVertexChannelLayout(VertexChannel::Normal, VertexFormat::Float3);
+    layout.AddVertexChannelLayout(VertexChannel::TexCoord, VertexFormat::Float2);
+
+    Plane::GetInstance(vb, ib, layout, primitives);
+    Cube::GetInstance(vb,ib,layout,primitives);
     auto colorBufferWriter = [&framebuffer = FrameBuffer](int X, int Y, ubvec3 color) {
         framebuffer[3 * WindowWidth * Y + 3 * X] = color.b;
         framebuffer[3 * WindowWidth * Y + 3 * X + 1] = color.g;
@@ -89,7 +98,7 @@ int main(int argc, char* argv[]) {
     raster->SetTexture(texture);
     raster->SetObjectCoordFrame(objectCoordinateFrame);
     raster->SetWriter(colorBufferWriter);
-    raster->SetData(cube->GetVertexBuffer(), cube->GetVertexBufferSize(), cube->GetIndexBuffer(), cube->GetIndexBufferSize(), cube->GetPrimitiveNum(), cube->GetVertexStreamLayout());
+    raster->SetData(vb.data(), vb.size(), ib.data(), ib.size(), primitives, layout);
     
     raster->ClearDepthBuffer();
     raster->Rasterize();

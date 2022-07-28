@@ -13,7 +13,7 @@ add_subdirectory(./dependency/freeglut freeglut)
 
 set(SORA_H
 	./include/rasterizer.h
-	./include/cube.h
+	./include/primitiveFactory.h
 	./include/utils.h
 	./include/defines.h
 	./include/camera.h
@@ -24,7 +24,6 @@ set(SORA_H
 set(SORA_S 
 	./src/main.cpp
 	./src/rasterizer.cpp
-	./src/cube.cpp
 	./src/texture.cpp
 )
 
