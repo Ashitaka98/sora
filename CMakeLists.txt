@@ -19,12 +19,14 @@ set(SORA_H
 	./include/camera.h
 	./include/illuminare.h
 	./include/texture.h
+	./include/renderController.h
 )
 
 set(SORA_S 
 	./src/main.cpp
 	./src/rasterizer.cpp
 	./src/texture.cpp
+	./src/renderController.cpp
 )
 
 source_group("Header" FILES

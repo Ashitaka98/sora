@@ -6,14 +6,14 @@
 namespace sora {
     //----------------------------------------------Projections------------------------------------------------------------
 	// return matrix used for transforming camera coordinate to clipping coordinate, field of view should be in radians
-    inline mat4 MatrixPerspectiveProjection(const float theta, const float aspectRatio, const vec2& shift, const float near, const float far) {
-        mat4 perspectiveMatrix = glm::perspective(theta, aspectRatio, near, far);
+    inline mat4 MatrixPerspectiveProjection(const float theta, const float aspectRatio, const vec2& shift, const float zNear, const float zFar) {
+        mat4 perspectiveMatrix = glm::perspective(theta, aspectRatio, zNear, zFar);
         mat4 translateMatrix = glm::translate(mat4(1.0f), vec3(-shift.x, -shift.y, 0));
         return translateMatrix * perspectiveMatrix;
     }
 
-	inline mat4 MatrixOrthogonalProjection(const float left, const float right, const float bottom, const float top, const float near, const float far) {
-		return glm::ortho(left, right, bottom, top, near, far);
+	inline mat4 MatrixOrthogonalProjection(const float left, const float right, const float bottom, const float top, const float zNear, const float zFar) {
+		return glm::ortho(left, right, bottom, top, zNear, zFar);
 	}
 
     // return matrix used for transforming clipping coordinate to window coordinate

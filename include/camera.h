@@ -1,11 +1,24 @@
 #pragma once
 #include"defines.h"
+#include"utils.h"
 namespace sora {
 	class Camera {
 	public:
-		Camera() {}
-		Camera(const mat4 &cameraFrame, const float fovAngle) :mCameraCoordFrame(cameraFrame),mFov(glm::radians(fovAngle)) {
+		Camera(const mat4 &cameraFrame, ProjectionType projType=ProjectionType::Perspective, const float fovAngle=90, const float width=5,const float aspectRatio=1,const float _zNear=1, const float _zFar=9) :
+			mCameraCoordFrame(cameraFrame),mProjType(projType),mFov(glm::radians(fovAngle)),mWidth(width),mAspectRatio(aspectRatio), zNear(_zNear),zFar(_zFar) {
 			mCameraFrameInv = glm::inverse(mCameraCoordFrame);
+			if (mProjType == ProjectionType::Perspective)
+				mProjectionMatrix = MatrixPerspectiveProjection(mFov, mAspectRatio, vec2(0, 0), zNear, zFar);
+			else if (mProjType == ProjectionType::Orthogonal) {
+				float left = -mWidth / 2;
+				float right = mWidth / 2;
+				float bottom = -mWidth * mAspectRatio / 2;
+				float top = mWidth * mAspectRatio / 2;
+
+				mProjectionMatrix = MatrixOrthogonalProjection(left, right, bottom, top, zNear, zFar);
+			}
+			else
+				assert(false);
 		}
 
 		inline float GetFov() {
@@ -15,6 +28,8 @@ namespace sora {
 		inline mat4 GetCameraFrame() { return mCameraCoordFrame; }
 
 		inline mat4 GetCameraFrameInv() { return mCameraFrameInv; }
+
+		inline mat4 GetProjectionMatrix() { return mProjectionMatrix; }
 
 		inline void SetCameraFrame(const mat4 &cameraFrame) {
 			mCameraCoordFrame = cameraFrame;
@@ -35,6 +50,13 @@ namespace sora {
 	private:
 		mat4 mCameraCoordFrame{};
 		mat4 mCameraFrameInv{};
+		mat4 mProjectionMatrix{};
+		
+		ProjectionType mProjType{ ProjectionType::Perspective };
+
+		float mAspectRatio{ 1 };
+		float zNear{ 1 }, zFar{ 9 };
 		float mFov{ 90.0f };
+		float mWidth{ 5 };
 	};
 }

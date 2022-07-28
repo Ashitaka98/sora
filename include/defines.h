@@ -20,6 +20,12 @@ namespace sora {
 		Orthogonal
 	};
 
+	enum class IlluminareType
+	{
+		Directional = 1,
+		Point = 2
+	};
+
 	enum class VertexChannel {
 		Position = 0,
 		Color = 1,
@@ -27,12 +33,14 @@ namespace sora {
 		TexCoord = 3,
 		Max = 4
 	};
+
 	enum class VertexFormat {
 		Float=sizeof(float),
 		Float2=2*sizeof(float),
 		Float3=3*sizeof(float),
 		Float4=4*sizeof(float),
 	};
+
 	class VertexStreamLayout {
 	public:
 		VertexStreamLayout() {
@@ -45,28 +53,6 @@ namespace sora {
 			return mSize[static_cast<int>(channel)] != 0;
 		}
 		inline uint16 GetStride() { return mStride; }
-		inline vec4 GetPosition(uint8* vb, uint32 i) {
-			vec4 ret;
-			memcpy(&ret,
-					vb + i * mStride + mOffsets[static_cast<int>(VertexChannel::Position)],
-					mSize[static_cast<int>(VertexChannel::Position)]);
-			return ret;
-		}
-		inline vec3 GetColor(uint8* vb, uint32 i) {
-			vec3 ret;
-			memcpy(&ret, vb + i * mStride + mOffsets[static_cast<int>(VertexChannel::Color)], mSize[static_cast<int>(VertexChannel::Color)]);
-			return ret;
-		}
-		inline vec3 GetNormal(uint8* vb, uint32 i) {
-			vec3 ret;
-			memcpy(&ret, vb + i * mStride + mOffsets[static_cast<int>(VertexChannel::Normal)], mSize[static_cast<int>(VertexChannel::Normal)]);
-			return ret;
-		}
-		inline vec2 GetTexCoor(uint8* vb, uint32 i) {
-			vec2 ret;
-			memcpy(&ret, vb + i * mStride + mOffsets[static_cast<int>(VertexChannel::TexCoord)], mSize[static_cast<int>(VertexChannel::TexCoord)]);
-			return ret;
-		}
 		void AddVertexChannelLayout(VertexChannel channel, VertexFormat format) {
 			mOffsets[static_cast<int>(channel)] = mStride;
 			mStride += static_cast<int>(format);
@@ -75,9 +61,50 @@ namespace sora {
 		uint16 GetOffsets(VertexChannel channel) {
 			return mOffsets[static_cast<int>(channel)];
 		}
-	private:
 		uint16 mStride=0;
 		uint16 mOffsets[static_cast<int>(VertexChannel::Max)];
 		uint16 mSize[static_cast<int>(VertexChannel::Max)];
+	};
+
+	class DrawCallData {
+	public:
+		DrawCallData() {}
+		DrawCallData(uint8* _vb, uint32 _vbsize, uint8* _ib, uint32 _ibsize, uint32 _primitive, VertexStreamLayout _layout) {
+			vb = _vb;
+			vbSize = _vbsize;
+			ib = _ib;
+			ibSize = _ibsize;
+			primitiveNum = _primitive;
+			mLayout = _layout;
+		}
+		inline vec4 GetPosition(uint32 i) {
+			vec4 ret;
+			memcpy(&ret,
+				vb + i * mLayout.mStride + mLayout.mOffsets[static_cast<int>(VertexChannel::Position)],
+				mLayout.mSize[static_cast<int>(VertexChannel::Position)]);
+			return ret;
+		}
+		inline vec3 GetColor(uint32 i) {
+			vec3 ret;
+			memcpy(&ret, vb + i * mLayout.mStride + mLayout.mOffsets[static_cast<int>(VertexChannel::Color)], mLayout.mSize[static_cast<int>(VertexChannel::Color)]);
+			return ret;
+		}
+		inline vec3 GetNormal(uint32 i) {
+			vec3 ret;
+			memcpy(&ret, vb + i * mLayout.mStride + mLayout.mOffsets[static_cast<int>(VertexChannel::Normal)], mLayout.mSize[static_cast<int>(VertexChannel::Normal)]);
+			return ret;
+		}
+		inline vec2 GetTexCoor(uint32 i) {
+			vec2 ret;
+			memcpy(&ret, vb + i * mLayout.mStride + mLayout.mOffsets[static_cast<int>(VertexChannel::TexCoord)], mLayout.mSize[static_cast<int>(VertexChannel::TexCoord)]);
+			return ret;
+		}
+	public:
+		uint8* vb{ nullptr };
+		uint8* ib{ nullptr };
+		VertexStreamLayout mLayout{};
+		uint32 vbSize{ 0 };
+		uint32 ibSize{ 0 };
+		uint32 primitiveNum{ 0 };
 	};
 }
