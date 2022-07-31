@@ -106,8 +106,8 @@ int main(int argc, char* argv[]) {
     layout2.AddVertexChannelLayout(VertexChannel::Normal, VertexFormat::Float3);
     layout2.AddVertexChannelLayout(VertexChannel::TexCoord, VertexFormat::Float2);
 
-    Plane::GetInstance(vb1, ib1, layout1, primitives1);
-    Cube::GetInstance(vb2,ib2,layout2,primitives2);
+    Plane::CreateInstance(vb1, ib1, layout1, primitives1);
+    Cube::CreateInstance(vb2,ib2,layout2,primitives2);
     DrawCallData data1(vb1.data(), vb1.size(), ib1.data(), ib1.size(), primitives1, layout1);
     DrawCallData data2(vb2.data(), vb2.size(), ib2.data(), ib2.size(), primitives2, layout2);
     auto colorBufferWriter = [&framebuffer = FrameBuffer](int X, int Y, ubvec3 color) {
