@@ -37,6 +37,8 @@ namespace sora {
             vec3 AB = vec3(vec2(viewportBuffer[B] - viewportBuffer[A]), 0);
             vec3 AC = vec3(vec2(viewportBuffer[C] - viewportBuffer[A]), 0);
             bool isBackFace = glm::cross(AB, AC).z < 0;
+            if (isBackFace)
+                continue;
 
             // a bounding box for a triangle projected to display window
             float boundary_x_min = MIN(MIN(viewportBuffer[A].x, viewportBuffer[B].x), viewportBuffer[C].x);
@@ -63,7 +65,7 @@ namespace sora {
                             if(mDepthWrite)
                                 zBuffer[i*mViewportWidth + j] = z_interpolated;
 
-                            if (mShading&&!isBackFace) {
+                            if (mShading) {
                                 bool occluded = false;
                                 if (mCastShadow) {
                                     vec4 objectCoord = (barycentric.x * w_n_inverse_a * mData.GetPosition(A) + barycentric.y * w_n_inverse_b * mData.GetPosition(B) + barycentric.z * w_n_inverse_c * mData.GetPosition(C)) / w_n_inverse_interpolated;
